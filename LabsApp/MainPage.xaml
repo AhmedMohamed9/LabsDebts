@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="LabsApp.MainPage"
+    FlowDirection="RightToLeft"
+    BackgroundColor="#121212"
+        NavigationPage.HasNavigationBar="False">
+
+    <ScrollView>
+
+        <VerticalStackLayout Padding="15" Spacing="15">
+
+            <!-- Title -->
+
+            <Label
+                Text="المعامل"
+                FontSize="30"
+                FontAttributes="Bold"
+                TextColor="White"
+                HorizontalOptions="Center"/>
+
+            <!-- Tabs -->
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+
+                <!-- Search Tab -->
+
+                <Button
+                    x:Name="SearchTabButton"
+                    Text="بحث"
+                    Clicked="OnShowSearchForm"
+                    BackgroundColor="#6C63FF"
+                    TextColor="White"
+                    CornerRadius="10"/>
+
+                <!-- Add Tab -->
+
+                <Button
+                    x:Name="AddTabButton"
+                    Grid.Column="1"
+                    Text="إضافة"
+                    Clicked="OnShowAddForm"
+                    BackgroundColor="#333333"
+                    TextColor="White"
+                    CornerRadius="10"/>
+
+            </Grid>
+
+            <!-- Search Form -->
+
+            <Frame
+                x:Name="SearchForm"
+                IsVisible="True"
+                BackgroundColor="#1E1E1E"
+                BorderColor="#333333"
+                CornerRadius="15"
+                Padding="15">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="البحث"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="White"/>
+
+                    <Entry
+                        x:Name="SearchEntry"
+                        Placeholder="ابحث بالاسم أو الكود"
+                        TextChanged="OnSearchChanged"
+                        TextColor="White"
+                        PlaceholderColor="Gray"/>
+
+                </VerticalStackLayout>
+
+            </Frame>
+
+            <!-- Add Form -->
+
+            <Frame
+                x:Name="AddForm"
+                IsVisible="False"
+                BackgroundColor="#1E1E1E"
+                BorderColor="#333333"
+                CornerRadius="15"
+                Padding="15">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="إضافة معمل"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="White"/>
+                    <Entry
+                        x:Name="CodeEntry"
+                        Placeholder="كود المعمل"
+                        TextColor="White"
+                        Keyboard="Numeric"
+                        PlaceholderColor="Gray"/>
+                    <Entry
+                        x:Name="NameEntry"
+                        Placeholder="اسم المعمل"
+                        TextColor="White"
+                        PlaceholderColor="Gray"/>
+
+                    
+
+                    <Button
+                        Text="إضافة"
+                        Clicked="OnAddClicked"
+                        BackgroundColor="#6C63FF"
+                        TextColor="White"
+                        CornerRadius="10"/>
+
+                </VerticalStackLayout>
+
+            </Frame>
+
+            <!-- Table Header -->
+
+            <Grid
+                ColumnDefinitions="*,*,*,Auto"
+                Padding="10"
+                BackgroundColor="#2A2A2A">
+                <Label
+                    Grid.Column="1"
+                    Text="الكود"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center"/>
+                
+                <Label
+                    Grid.Column="0"
+                    Text="اسم المعمل"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center"/>
+
+                <Label
+                    Grid.Column="2"
+                    Text="المديونية"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center"/>
+
+            </Grid>
+
+            <!-- Labs List -->
+
+            <CollectionView x:Name="LabsList">
+                <CollectionView.ItemTemplate>
+
+                    <DataTemplate>
+
+                        <Frame
+            Margin="0,5"
+            Padding="10"
+            BackgroundColor="#1E1E1E"
+            BorderColor="#333333"
+            CornerRadius="10">
+                            <Frame.GestureRecognizers>
+
+                                <TapGestureRecognizer
+            Tapped="OnLabTapped"
+            CommandParameter="{Binding .}" />
+
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,*,*,Auto">
+
+                                <!-- Name -->
+                               <Label
+                            Grid.Column="1"
+                            Text="{Binding Code, StringFormat='#{0}'}"
+                            TextColor="#CCCCCC"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                                
+                                <Label
+                    Grid.Column="0"
+                    Text="{Binding Name}"
+                    TextColor="White"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+
+                                <!-- Unpaid Total -->
+                                <Label
+    Grid.Column="2"
+    Text="{Binding UnpaidTotal, StringFormat='{}{0} ج'}"
+    TextColor="#FFB74D"
+    FontAttributes="Bold"
+    HorizontalOptions="Center"
+    VerticalOptions="Center"/>
+
+
+                                <!-- Delete Button 
+
+                                <Button
+                    Grid.Column="3"
+                    Text="🗑"
+                    Clicked="OnDeleteClicked"
+                    CommandParameter="{Binding .}"
+                    BackgroundColor="Transparent"
+                    TextColor="Red"
+                    FontSize="18"/>
+                                -->
+
+                            </Grid>
+
+                        </Frame>
+
+                    </DataTemplate>
+
+                </CollectionView.ItemTemplate>
+                
+
+            </CollectionView>
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>

@@ -427,3 +427,45 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# MAUI / Android
+*.apk
+*.aab
+*.keystore
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+
+# NuGet
+packages/
+*.nupkg
+
+# SQLite DB
+*.db
+*.db3
+
+# Temporary
+Temp/
+
+# Android
+*.apk
+*.aab
+*.keystore
+
+# MAUI
+*.pdb
