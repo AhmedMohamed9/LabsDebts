@@ -40,7 +40,67 @@ public class DatabaseService
 
         return await db.Table<Lab>().ToListAsync();
     }
+    public async Task<bool> LabExists(int code, string name)
+    {
+        var db = await GetDatabaseAsync();
 
+        return await db.Table<Lab>()
+            .Where(x =>
+                x.Code == code ||
+                x.Name.ToLower() == name.ToLower())
+            .CountAsync() > 0;
+    }
+    public async Task<List<Lab>> GetLabsPaged(
+    int page,
+    int pageSize)
+    {
+        var db = await GetDatabaseAsync();
+
+        var labs = await db.Table<Lab>()
+            .OrderBy(x => x.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        await Task.WhenAll(
+                labs.Select(async lab =>
+                {
+                    lab.UnpaidTotal = await GetUnpaidTotal(lab.Id);
+                }));
+
+        return labs;
+    }
+    public async Task<List<Lab>> SearchLabs(string text)
+    {
+        var db = await GetDatabaseAsync();
+
+        text = text.Trim();
+
+        List<Lab> labs;
+
+        if (int.TryParse(text, out int code))
+        {
+            labs = await db.Table<Lab>()
+                .Where(x =>
+                    x.Code == code ||
+                    x.Name.Contains(text))
+                .ToListAsync();
+        }
+        else
+        {
+            labs = await db.Table<Lab>()
+                .Where(x => x.Name.Contains(text))
+                .ToListAsync();
+        }
+
+        await Task.WhenAll(
+            labs.Select(async lab =>
+            {
+                lab.UnpaidTotal = await GetUnpaidTotal(lab.Id);
+            }));
+
+        return labs;
+    }
     public async Task<int> AddLab(Lab lab)
     {
         var db = await GetDatabaseAsync();
@@ -139,50 +199,4 @@ public class DatabaseService
         return labs;
     }
 
-}//using SQLite;
-//using LabsDebts.Models;
-
-//namespace LabsDebts.Services;
-
-//public class DatabaseService
-//{
-//    private SQLiteAsyncConnection? _db;
-
-//    private async Task<SQLiteAsyncConnection> GetDatabaseAsync()
-//    {
-//        if (_db != null)
-//            return _db;
-
-//        var path = Path.Combine(FileSystem.AppDataDirectory, "labs.db");
-
-//        _db = new SQLiteAsyncConnection(path);
-
-//        await _db.CreateTableAsync<Lab>();
-
-//        return _db;
-//    }
-//    public async Task<int> DeleteLab(Lab lab)
-//    {
-//        await Init();
-
-//        return await _db!.DeleteAsync(lab);
-//    }
-//    public Task Init()
-//    {
-//        return GetDatabaseAsync();
-//    }
-
-//    public async Task<List<Lab>> GetLabs()
-//    {
-//        var db = await GetDatabaseAsync();
-
-//        return await db.Table<Lab>().ToListAsync();
-//    }
-
-//    public async Task<int> AddLab(Lab lab)
-//    {
-//        var db = await GetDatabaseAsync();
-
-//        return await db.InsertAsync(lab);
-//    }
-//}
+}

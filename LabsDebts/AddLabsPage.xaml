@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="LabsDebts.AddLabsPage"
+    FlowDirection="RightToLeft"
+    BackgroundColor="#121212"
+    NavigationPage.HasNavigationBar="False">
+    <Grid>
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="20"
+            Spacing="20">
+
+            <!-- Header -->
+            <Grid>
+                <Button
+                Text="رجوع"
+                Clicked="OnBackClicked"
+                BackgroundColor="#333333"
+                TextColor="White"
+                CornerRadius="10"
+                HorizontalOptions="Start"/>
+            </Grid>
+
+            <Grid ColumnDefinitions="Auto,*">
+
+                
+
+                <Label
+                    Grid.ColumnSpan="2"
+                    Text="استيراد المعامل من Excel"
+                    FontSize="28"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+
+            </Grid>
+
+            <!-- Description -->
+
+            <Frame
+                BackgroundColor="#1E1E1E"
+                BorderColor="#333333"
+                CornerRadius="15"
+                Padding="15">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="صيغة الملف المطلوبة"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        TextColor="White"/>
+
+                    <Label
+                        Text="العمود الأول: كود"
+                        TextColor="#CCCCCC"/>
+
+                    <Label
+                        Text="العمود الثاني: اسم المعمل"
+                        TextColor="#CCCCCC"/>
+
+                    <Label
+                        Text="سيتم تجاهل السجلات المكررة تلقائياً"
+                        TextColor="#FFB74D"/>
+
+                </VerticalStackLayout>
+
+            </Frame>
+
+            <!-- File Selection -->
+
+            <Frame
+                BackgroundColor="#1E1E1E"
+                BorderColor="#333333"
+                CornerRadius="15"
+                Padding="15">
+
+                <VerticalStackLayout Spacing="15">
+
+                    <Label
+                        Text="ملف Excel"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="White"/>
+
+                    <Label
+                        x:Name="SelectedFileLabel"
+                        Text="لم يتم اختيار ملف"
+                        TextColor="#BBBBBB"
+                        HorizontalOptions="Center"/>
+
+                    <Button
+                        Text="📁 اختيار ملف Excel"
+                        Clicked="OnPickFileClicked"
+                        BackgroundColor="#6C63FF"
+                        TextColor="White"
+                        CornerRadius="12"/>
+
+                </VerticalStackLayout>
+
+            </Frame>
+
+            <!-- Import Button -->
+
+            <Button
+                x:Name="ImportButton"
+                Text="استيراد المعامل"
+                Clicked="OnImportClicked"
+                BackgroundColor="#4CAF50"
+                TextColor="White"
+                FontSize="18"
+                FontAttributes="Bold"
+                HeightRequest="55"
+                CornerRadius="12"/>
+
+            <!-- Result -->
+
+            <Frame
+                x:Name="ResultFrame"
+                IsVisible="False"
+                BackgroundColor="#1E1E1E"
+                BorderColor="#333333"
+                CornerRadius="15"
+                Padding="15">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="نتيجة الاستيراد"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        TextColor="White"/>
+
+                    <Label
+                        x:Name="ImportedCountLabel"
+                        TextColor="#4CAF50"
+                        FontSize="16"/>
+
+                    <Label
+                        x:Name="SkippedCountLabel"
+                        TextColor="#FFB74D"
+                        FontSize="16"/>
+
+                </VerticalStackLayout>
+
+            </Frame>
+            
+        </VerticalStackLayout>
+
+    </ScrollView>
+    <Grid
+x:Name="LoadingOverlay"
+IsVisible="False"
+BackgroundColor="#80000000"
+ZIndex="999">
+
+        <VerticalStackLayout
+    VerticalOptions="Center"
+    HorizontalOptions="Center"
+    Spacing="15">
+
+            <ActivityIndicator
+        IsRunning="True"
+        Color="#6C63FF"
+        WidthRequest="50"
+        HeightRequest="50"/>
+
+            <Label
+        Text="جاري استيراد البيانات..."
+        TextColor="White"
+        FontSize="18"
+        HorizontalOptions="Center"/>
+
+        </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

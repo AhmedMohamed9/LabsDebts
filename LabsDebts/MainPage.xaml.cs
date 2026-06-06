@@ -1,20 +1,33 @@
 ﻿using LabsDebts.Models;
 using LabsDebts.Services;
+using System.Collections.ObjectModel;
 //using static Java.Util.Jar.Attributes;
 
 namespace LabsDebts;
 
 public partial class MainPage : ContentPage
 {
+    private const uint MenuAnimationDuration = 250;
+    private const double MenuClosedOffset = 300;
     private bool _isNavigating;
+    private bool _isMenuAnimating;
     private readonly DatabaseService _db;
-    private List<Lab> _allLabs = new();
+    //private List<Lab> _allLabs = new();
+    private const int PageSize = 20;
 
+    private int _currentPage = 1;
+
+    private bool _isLoading;
+
+    private bool _hasMoreData = true;
+
+    private readonly ObservableCollection<Lab> _loadedLabs = new();
     public MainPage(DatabaseService db)
     {
         InitializeComponent();
 
         _db = db;
+        LabsList.ItemsSource = _loadedLabs;
     }
 
     protected override async void OnAppearing()
@@ -24,11 +37,49 @@ public partial class MainPage : ContentPage
         await LoadLabs();
     }
 
-    private async Task LoadLabs()
+    private async Task LoadLabs(bool loadMore = false)
     {
-        _allLabs = await _db.GetLabsWithTotals();
+        if (_isLoading)
+            return;
 
-        LabsList.ItemsSource = _allLabs;
+        _isLoading = true;
+
+        try
+        {
+            if (!loadMore)
+            {
+                _currentPage = 1;
+                _loadedLabs.Clear();
+                _hasMoreData = true;
+            }
+
+            if (!_hasMoreData)
+                return;
+
+            var pageData = await _db.GetLabsPaged(
+                _currentPage,
+                PageSize);
+
+            if (pageData.Count < PageSize)
+                _hasMoreData = false;
+
+            foreach (var lab in pageData)
+            {
+                _loadedLabs.Add(lab);
+            }
+
+            _currentPage++;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+    private async void OnLoadMore(
+    object sender,
+    EventArgs e)
+    {
+        await LoadLabs(true);
     }
     private async void OnLabTapped(object sender, TappedEventArgs e)
     {
@@ -80,9 +131,7 @@ public partial class MainPage : ContentPage
         var code = int.Parse(CodeEntry.Text);
         // Check duplicates
 
-        bool exists = _allLabs.Any(x =>
-            x.Name.ToLower() == name.ToLower() ||
-            x.Code == code);
+        bool exists = await _db.LabExists(code, name);
 
         if (exists)
         {
@@ -103,22 +152,26 @@ public partial class MainPage : ContentPage
         await LoadLabs();
     }
 
-    private void OnSearchChanged(object sender, TextChangedEventArgs e)
+    private async void OnSearchChanged(
+    object sender,TextChangedEventArgs e)
     {
-        var text = e.NewTextValue?.ToLower() ?? "";
+        var text = e.NewTextValue?.Trim();
 
-        var filtered = _allLabs.Where(x =>
-            x.Name.ToLower().Contains(text) ||
-            x.Code.ToString().Contains(text))
-            .ToList();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            LabsList.ItemsSource = _loadedLabs;
+            await LoadLabs();
+            return;
+        }
 
-        LabsList.ItemsSource = filtered;
+        LabsList.ItemsSource = await _db.SearchLabs(text);
     }
-
+    
     private void OnShowAddForm(object sender, EventArgs e)
     {
         AddForm.IsVisible = true;
         SearchForm.IsVisible = false;
+        CloseMenuImmediately();
 
         AddTabButton.BackgroundColor = Color.FromArgb("#6C63FF");
         SearchTabButton.BackgroundColor = Color.FromArgb("#333333");
@@ -128,9 +181,67 @@ public partial class MainPage : ContentPage
     {
         AddForm.IsVisible = false;
         SearchForm.IsVisible = true;
+        CloseMenuImmediately();
 
         SearchTabButton.BackgroundColor = Color.FromArgb("#6C63FF");
         AddTabButton.BackgroundColor = Color.FromArgb("#333333");
+    }
+
+    private async void OnMenuClicked(object sender, EventArgs e)
+    {
+        if (_isMenuAnimating)
+            return;
+
+        _isMenuAnimating = true;
+
+        MenuOverlay.IsVisible = true;
+
+        MenuOverlay.Opacity = 0;
+
+        MainMenu.TranslationX = 230;
+
+        await Task.WhenAll(
+            MenuOverlay.FadeTo(1, 250),
+            MainMenu.TranslateTo(0, 0, 250, Easing.CubicOut)
+        );
+
+        _isMenuAnimating = false;
+    }
+
+    private async void OnCloseMenuTapped(object sender, TappedEventArgs e)
+    {
+        await CloseMenuAsync();
+    }
+
+    private async void OnAddLabMenuClicked(object sender, EventArgs e)
+    {
+        await CloseMenuAsync();
+
+        await Navigation.PushAsync(new AddLabsPage(_db));
+    }
+
+    private async Task CloseMenuAsync()
+    {
+        if (_isMenuAnimating || !MenuOverlay.IsVisible)
+            return;
+
+        _isMenuAnimating = true;
+
+        await Task.WhenAll(
+            MenuOverlay.FadeTo(0, 200),
+            MainMenu.TranslateTo(230, 0, 250, Easing.CubicIn)
+        );
+
+        MenuOverlay.IsVisible = false;
+
+        _isMenuAnimating = false;
+    }
+
+    private void CloseMenuImmediately()
+    {
+        MainMenu.TranslationX = MenuClosedOffset;
+        MenuOverlay.IsVisible = false;
+        _isMenuAnimating = false;
     }
     private async void OnDeleteClicked(object sender, EventArgs e)
     {

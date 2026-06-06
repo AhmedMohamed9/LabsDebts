@@ -9,9 +9,9 @@ namespace LabsDebts.Models
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-
+        [MaxLength(50)]
         public string Name { get; set; } = string.Empty;
-
+        [Unique]
         public  int Code { get; set; }
         [Ignore]
         public int UnpaidTotal { get; set; }
