@@ -263,4 +263,13 @@ public partial class MainPage : ContentPage
 
         await LoadLabs();
     }
+    private async void OnExportDataMenuClicked(
+    object sender,
+    EventArgs e)
+    {
+        await CloseMenuAsync();
+
+        await Navigation.PushAsync(
+            new ExportDataPage(_db));
+    }
 }

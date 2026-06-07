@@ -281,13 +281,21 @@
                         Text="القائمة"
                         FontSize="24"
                         FontAttributes="Bold"
-                        TextColor="White" />
+                        TextColor="White" 
+                        FlowDirection="RightToLeft"/>
 
                     <Button
                         Text="إضافة معامل"
                         Clicked="OnAddLabMenuClicked"
                         BackgroundColor="#2A2A2A"
-                        TextColor="White" />
+                        TextColor="White"
+                        />
+
+                    <Button
+                        Text="📊 تصدير البيانات"
+                        Clicked="OnExportDataMenuClicked"
+                        BackgroundColor="#2A2A2A"
+                        TextColor="White"/>
 
                 </VerticalStackLayout>
 

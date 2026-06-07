@@ -76,10 +76,16 @@
 	  <Compile Update="LabDetailsPage.xaml.cs">
 	    <DependentUpon>LabDetailsPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="ExportDataPage.xaml.cs">
+	    <DependentUpon>ExportDataPage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="LabDetailsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ExportDataPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

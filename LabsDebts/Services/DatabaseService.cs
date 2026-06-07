@@ -1,6 +1,7 @@
 ﻿
 using SQLite;
 using LabsDebts.Models;
+using LabsDebts.DTOs;
 
 namespace LabsDebts.Services;
 
@@ -198,5 +199,32 @@ public class DatabaseService
 
         return labs;
     }
+    public async Task<List<UnpaidExportRow>> GetUnpaidTransactionsForExport(
+    DateTime? fromDate,
+    DateTime? toDate)
+    {
+        var db = await GetDatabaseAsync();
 
+        return await db.QueryAsync<UnpaidExportRow>(
+            """
+        SELECT
+            l.Code AS LabCode,
+            l.Name AS LabName,
+            t.Amount,
+            t.Note,
+            t.Date,
+            t.DueDate
+        FROM LabTransaction t
+        INNER JOIN Lab l
+            ON l.Id = t.LabId
+        WHERE t.IsPaid = 0
+        AND (? IS NULL OR t.Date >= ?)
+        AND (? IS NULL OR t.Date <= ?)
+        ORDER BY t.Date DESC
+        """,
+            fromDate,
+            fromDate,
+            toDate,
+            toDate);
+    }
 }

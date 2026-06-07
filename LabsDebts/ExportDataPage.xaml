@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="LabsDebts.ExportDataPage"
+    FlowDirection="RightToLeft"
+    BackgroundColor="#121212"
+    NavigationPage.HasNavigationBar="False">
+
+    <Grid>
+
+        <ScrollView>
+
+            <VerticalStackLayout
+                Padding="20"
+                Spacing="20">
+
+                <!-- Header -->
+
+                <Grid>
+
+                    <Button
+                        Text="رجوع"
+                        Clicked="OnBackClicked"
+                        BackgroundColor="#333333"
+                        TextColor="White"
+                        CornerRadius="10"
+                        HorizontalOptions="Start"/>
+
+                </Grid>
+
+                <Label
+                    Text="تصدير المديونيات"
+                    FontSize="28"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    HorizontalOptions="Center"/>
+
+                <!-- Filters -->
+
+                <Frame
+                    BackgroundColor="#1E1E1E"
+                    BorderColor="#333333"
+                    CornerRadius="15"
+                    Padding="15">
+
+                    <VerticalStackLayout Spacing="15">
+
+                        <Label
+                            Text="من تاريخ"
+                            TextColor="White"
+                            FontAttributes="Bold"/>
+
+                        <DatePicker
+                            x:Name="FromDatePicker"
+                            TextColor="White"/>
+
+                        <Label
+                            Text="إلى تاريخ"
+                            TextColor="White"
+                            FontAttributes="Bold"/>
+
+                        <DatePicker
+                            x:Name="ToDatePicker"
+                            TextColor="White"/>
+
+                    </VerticalStackLayout>
+
+                </Frame>
+
+                <!-- Export Button -->
+
+                <Button
+                    x:Name="ExportButton"
+                    Text="📊 تصدير Excel"
+                    Clicked="OnExportClicked"
+                    BackgroundColor="#4CAF50"
+                    TextColor="White"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    HeightRequest="55"
+                    CornerRadius="12"/>
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+        <!-- Loading -->
+
+        <Grid
+            x:Name="LoadingOverlay"
+            IsVisible="False"
+            BackgroundColor="#80000000"
+            ZIndex="999">
+
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Spacing="15">
+
+                <ActivityIndicator
+                    IsRunning="True"
+                    WidthRequest="50"
+                    HeightRequest="50"
+                    Color="#6C63FF"/>
+
+                <Label
+                    Text="جاري إنشاء ملف Excel..."
+                    TextColor="White"
+                    FontSize="18"/>
+
+            </VerticalStackLayout>
+
+        </Grid>
+
+    </Grid>
+
+</ContentPage>
