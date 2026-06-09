@@ -15,5 +15,6 @@ namespace LabsDebts.Models
         public  int Code { get; set; }
         [Ignore]
         public int UnpaidTotal { get; set; }
+      
     }
 }

@@ -71,37 +71,96 @@ public class DatabaseService
 
         return labs;
     }
-    public async Task<List<Lab>> SearchLabs(string text)
+    public async Task<List<Lab>> SearchLabsPaged(
+        string? text,
+        DateTime fromDate,
+        DateTime toDate,
+        bool hasTransactionsOnly,
+        int page,
+        int pageSize)
     {
         var db = await GetDatabaseAsync();
 
-        text = text.Trim();
+        string sql;
+        List<object> parameters = new();
 
-        List<Lab> labs;
-
-        if (int.TryParse(text, out int code))
+        if (hasTransactionsOnly)
         {
-            labs = await db.Table<Lab>()
-                .Where(x =>
-                    x.Code == code ||
-                    x.Name.Contains(text))
-                .ToListAsync();
+            sql =
+            """
+        SELECT DISTINCT l.*
+        FROM Lab l
+        INNER JOIN LabTransaction t
+            ON t.LabId = l.Id
+        WHERE t.IsPaid = 0
+        AND t.Date IS NOT NULL
+        AND t.Date >= ?
+        AND t.Date <= ?
+        """;
+
+            parameters.Add(fromDate);
+            parameters.Add(toDate);
         }
         else
         {
-            labs = await db.Table<Lab>()
-                .Where(x => x.Name.Contains(text))
-                .ToListAsync();
+            sql =
+            """
+        SELECT *
+        FROM Lab
+        WHERE 1 = 1
+        """;
         }
+
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            if (int.TryParse(text, out int code))
+            {
+                sql += " AND (Code = ? OR Name LIKE ?)";
+                parameters.Add(code);
+                parameters.Add($"%{text}%");
+            }
+            else
+            {
+                sql += " AND Name LIKE ?";
+                parameters.Add($"%{text}%");
+            }
+        }
+
+        sql += " ORDER BY Name LIMIT ? OFFSET ?";
+
+        parameters.Add(pageSize);
+        parameters.Add((page - 1) * pageSize);
+
+        var labs = await db.QueryAsync<Lab>(
+            sql,
+            parameters.ToArray());
 
         await Task.WhenAll(
             labs.Select(async lab =>
             {
-                lab.UnpaidTotal = await GetUnpaidTotal(lab.Id);
+                lab.UnpaidTotal =
+                    await GetUnpaidTotal(
+                        lab.Id,
+                        fromDate,
+                        toDate);
             }));
 
         return labs;
     }
+    //public async Task<bool> HasTransactionsInPeriod(
+    //int labId,
+    //DateTime fromDate,
+    //DateTime toDate)
+    //{
+    //    var db = await GetDatabaseAsync();
+
+    //    return await db.Table<LabTransaction>()
+    //        .Where(x =>
+    //            x.LabId == labId &&
+    //            x.Date >= fromDate &&
+    //            x.Date <= toDate)
+    //        .CountAsync() > 0;
+    //}
     public async Task<int> AddLab(Lab lab)
     {
         var db = await GetDatabaseAsync();
@@ -164,6 +223,27 @@ public class DatabaseService
             labId);
 
         return result;
+    }
+    public async Task<int> GetUnpaidTotal(
+    int labId,
+    DateTime fromDate,
+    DateTime toDate)
+    {
+        var db = await GetDatabaseAsync();
+
+        return await db.ExecuteScalarAsync<int>(
+            """
+        SELECT IFNULL(SUM(Amount), 0)
+        FROM LabTransaction
+        WHERE LabId = ?
+        AND IsPaid = 0
+        AND Date IS NOT NULL
+        AND Date >= ?
+        AND Date <= ?
+        """,
+            labId,
+            fromDate,
+            toDate);
     }
     public async Task<int> DeleteTransaction(LabTransaction transaction)
     {

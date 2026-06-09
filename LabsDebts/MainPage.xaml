@@ -89,10 +89,33 @@
                         <Entry
                             x:Name="SearchEntry"
                             Placeholder="ابحث بالاسم أو الكود"
-                            TextChanged="OnSearchChanged"
+                            
                             TextColor="White"
                             PlaceholderColor="Gray" />
+                        <DatePicker
+    x:Name="FromDatePicker"
+    Date="2026-01-01"/>
 
+                        <DatePicker
+    x:Name="ToDatePicker"/>
+
+                        <HorizontalStackLayout Spacing="10">
+
+                            <CheckBox
+        x:Name="HasTransactionsOnlyCheckBox"/>
+
+                            <Label
+        Text="إخفاء المعامل بدون معاملات"
+        TextColor="White"
+        VerticalOptions="Center"/>
+
+                        </HorizontalStackLayout>
+
+                        <Button
+    Text="بحث"
+    Clicked="OnSearchButtonClicked"
+    BackgroundColor="#6C63FF"
+    TextColor="White"/>
                     </VerticalStackLayout>
 
                 </Frame>

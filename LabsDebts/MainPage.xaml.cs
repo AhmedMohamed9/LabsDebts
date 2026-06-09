@@ -12,7 +12,6 @@ public partial class MainPage : ContentPage
     private bool _isNavigating;
     private bool _isMenuAnimating;
     private readonly DatabaseService _db;
-    //private List<Lab> _allLabs = new();
     private const int PageSize = 20;
 
     private int _currentPage = 1;
@@ -20,6 +19,15 @@ public partial class MainPage : ContentPage
     private bool _isLoading;
 
     private bool _hasMoreData = true;
+    private bool _isSearchMode;
+
+    private string? _searchText;
+
+    private DateTime _searchFromDate;
+
+    private DateTime _searchToDate;
+
+    private bool _hasTransactionsOnly;
 
     private readonly ObservableCollection<Lab> _loadedLabs = new();
     public MainPage(DatabaseService db)
@@ -28,6 +36,8 @@ public partial class MainPage : ContentPage
 
         _db = db;
         LabsList.ItemsSource = _loadedLabs;
+        FromDatePicker.Date = new DateTime(2026, 6, 1);
+        ToDatePicker.Date = DateTime.Today;
     }
 
     protected override async void OnAppearing()
@@ -41,7 +51,8 @@ public partial class MainPage : ContentPage
     {
         if (_isLoading)
             return;
-
+        if (loadMore && !_hasMoreData)
+            return;
         _isLoading = true;
 
         try
@@ -75,11 +86,88 @@ public partial class MainPage : ContentPage
             _isLoading = false;
         }
     }
+    private async void OnSearchButtonClicked(
+    object sender,
+    EventArgs e)
+    {
+        _searchText =
+            SearchEntry.Text?.Trim();
+
+        _searchFromDate =
+            FromDatePicker.Date?? DateTime.MinValue;
+
+        _searchToDate =
+            ToDatePicker.Date?? DateTime.MaxValue;
+
+        _hasTransactionsOnly =
+            HasTransactionsOnlyCheckBox.IsChecked;
+
+        _isSearchMode = true;
+
+        await LoadSearchResults();
+    }
+    private async Task LoadSearchResults(
+    bool loadMore = false)
+    {
+        System.Diagnostics.Debug.WriteLine(
+        $"LoadSearchResults - loadMore={loadMore}");
+
+        if (_isLoading)
+            return;
+        if (loadMore && !_hasMoreData)
+            return;
+        _isLoading = true;
+
+        try
+        {
+            if (!loadMore)
+            {
+                _currentPage = 1;
+                _loadedLabs.Clear();
+                _hasMoreData = true;
+            }
+
+            var result =
+                await _db.SearchLabsPaged(
+                    _searchText,
+                    _searchFromDate,
+                    _searchToDate,
+                    _hasTransactionsOnly,
+                    _currentPage,
+                    PageSize);
+
+            System.Diagnostics.Debug.WriteLine(
+    $"Page {_currentPage} returned {result.Count} rows");
+
+            if (result.Count < PageSize)
+                _hasMoreData = false;
+
+            foreach (var lab in result)
+            {
+                _loadedLabs.Add(lab);
+            }
+
+            _currentPage++;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
     private async void OnLoadMore(
     object sender,
     EventArgs e)
     {
-        await LoadLabs(true);
+        if (_isLoading || !_hasMoreData)
+            return;
+        if (_isSearchMode)
+        {
+            await LoadSearchResults(true);
+        }
+        else
+        {
+            await LoadLabs(true);
+        }
     }
     private async void OnLabTapped(object sender, TappedEventArgs e)
     {
@@ -143,28 +231,35 @@ public partial class MainPage : ContentPage
             Name = name,
             Code = code
         };
-
         await _db.AddLab(lab);
+
+        if (_isSearchMode)
+        {
+            await LoadSearchResults();
+        }
+        else
+        {
+            await LoadLabs();
+        }
 
         NameEntry.Text = string.Empty;
         CodeEntry.Text = string.Empty;
 
-        await LoadLabs();
     }
 
     private async void OnSearchChanged(
     object sender,TextChangedEventArgs e)
     {
-        var text = e.NewTextValue?.Trim();
+        //var text = e.NewTextValue?.Trim();
 
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            LabsList.ItemsSource = _loadedLabs;
-            await LoadLabs();
-            return;
-        }
+        //if (string.IsNullOrWhiteSpace(text))
+        //{
+        //    LabsList.ItemsSource = _loadedLabs;
+        //    await LoadLabs();
+        //    return;
+        //}
 
-        LabsList.ItemsSource = await _db.SearchLabs(text);
+        //LabsList.ItemsSource = await _db.SearchLabs(text);
     }
     
     private void OnShowAddForm(object sender, EventArgs e)
@@ -261,7 +356,14 @@ public partial class MainPage : ContentPage
 
         await _db.DeleteLab(lab);
 
-        await LoadLabs();
+        if (_isSearchMode)
+        {
+            await LoadSearchResults();
+        }
+        else
+        {
+            await LoadLabs();
+        }
     }
     private async void OnExportDataMenuClicked(
     object sender,
